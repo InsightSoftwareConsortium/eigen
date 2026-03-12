@@ -906,8 +906,6 @@ add_library (ITKInternalEigen3::Eigen ALIAS eigen_internal)
 # This would wrongly enforce EIGEN_MPL2_ONLY to other libraries using Eigen.
 # We wrap this definition in ITK_USE_EIGEN_MPL2_ONLY, and only enabling it internally in the dashboards and CI,
 # to avoid introducing GPL code from Eigen3 internally in ITK.
-option(ITK_USE_EIGEN_MPL2_ONLY "Set compile definition EIGEN_MPL2_ONLY for ITKInternalEigen3." OFF)
-mark_as_advanced(ITK_USE_EIGEN_MPL2_ONLY)
 
 if(ITK_USE_EIGEN_MPL2_ONLY)
   target_compile_definitions (eigen_internal INTERFACE "EIGEN_MPL2_ONLY")
