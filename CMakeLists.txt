@@ -968,17 +968,10 @@ target_include_directories (eigen_internal SYSTEM INTERFACE
 
 # Export as title case Eigen
 set_target_properties (eigen_internal PROPERTIES EXPORT_NAME Eigen)
-# Register in ITK's main export set so find_package(ITK) resolves
-# eigen_internal as an IMPORTED target loaded from ITKTargets.cmake
-# (issue InsightSoftwareConsortium/ITK#6239: SimpleITK FetchContent +
-# FIND_PACKAGE_ARGS fallback). ${ITK3P_INSTALL_EXPORT_NAME} is set by
-# ITK proper in Modules/ThirdParty/Eigen3/src/CMakeLists.txt; if unset
-# (i.e. building outside ITK), this install becomes a no-op.
+# Issue InsightSoftwareConsortium/ITK#6239: ship eigen_internal in ITKTargets.cmake when building inside ITK.
 if(DEFINED ITK3P_INSTALL_EXPORT_NAME)
   install (TARGETS eigen_internal EXPORT ${ITK3P_INSTALL_EXPORT_NAME})
 endif()
-# Also register in the standalone ITKInternalEigen3 export set used by
-# find_package(ITKInternalEigen3) consumers.
 install (TARGETS eigen_internal EXPORT ITKInternalEigen3Targets)
 
 set(EIGEN3_TARGETS_FILE ITKInternalEigen3Targets.cmake)
