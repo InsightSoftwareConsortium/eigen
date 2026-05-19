@@ -64,14 +64,14 @@ echo "NEW_BRANCH [${NEW_BRANCH}]"
 ITK_CURRENT_BRANCH=for/itk-20260501-879885e1
 
 git fetch upstream
-git fetch origin ${ITK_CURRENT_BRANCH}
-git log --oneline upstream/master..origin/${ITK_CURRENT_BRANCH}
+git fetch origin ${ITK_CURRENT_BRANCH}:${ITK_CURRENT_BRANCH}
+git log --oneline upstream/master..${ITK_CURRENT_BRANCH}
 ```
 
 6. Branch from the old fork tag and rebase overlays onto the new release tag (resolve conflicts as needed):
 
 ```
-git checkout -b ${NEW_BRANCH} origin/${ITK_CURRENT_BRANCH}
+git checkout -b ${NEW_BRANCH} ${ITK_CURRENT_BRANCH}
 git rebase --onto refs/tags/${ITK_EIGEN_TARGET_TAG} upstream/master ${NEW_BRANCH}
 ```
 
