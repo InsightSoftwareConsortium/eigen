@@ -815,18 +815,8 @@ message(STATUS "")
 ################################ ITK ##########################################
 ###############################################################################
 
-
-# Caller from ITK needs to pass to this project in itkExternal_Eigen3:
-# CMAKE_INSTALL_PREFIX: install prefix, make sure is an absolute path.
-# CMAKE_INSTALL_INCLUDEDIR: Location where headers files are installed: ${ITK_INSTALL_INCLUDE_DIR}
-# CMAKE_INSTALL_DATADIR: Location to install Targets and Config files: ${ITK_INSTALL_PACKAGE_DIR}/Modules
-# (optionally) ITK_USE_EIGEN_MPL2_ONLY (OFF by default)
-
-option(ITK_USE_EIGEN_MPL2_ONLY "Set compile definition EIGEN_MPL2_ONLY for ITKInternalEigen3." OFF)
-mark_as_advanced(ITK_USE_EIGEN_MPL2_ONLY)
-
-include(GNUInstallDirs)
-# Variables CMAKE_INSTALL_X are handled by GNUInstallDirs
+# CMAKE_INSTALL_INCLUDEDIR and CMAKE_INSTALL_DATADIR are inherited from the
+# parent ITK project (which calls include(GNUInstallDirs)) and src/CMakeLists.txt.
 set(INCLUDE_INSTALL_DIR "${CMAKE_INSTALL_INCLUDEDIR}")
 set(CMAKEPACKAGE_INSTALL_DIR "${CMAKE_INSTALL_DATADIR}")
 
@@ -892,31 +882,3 @@ install(
   DIRECTORY   "${CMAKE_CURRENT_SOURCE_DIR}/Eigen/"
   DESTINATION "${ITK3P_INSTALL_INCLUDE_DIR}/itkeigen/Eigen"
   PATTERN "*.txt" EXCLUDE)
-
-######################### eigen_internal #####################################
-
-# eigen_internal is the Eigen used internally in ITK if ITK_USE_SYSTEM_EIGEN is not set.
-
-# Imported target support
-add_library (eigen_internal INTERFACE)
-add_library (ITKInternalEigen3::Eigen ALIAS eigen_internal)
-# Because the header-only nature of Eigen3, EIGEN_MPL2_ONLY definition could be leaked outside ITK.
-# This would wrongly enforce EIGEN_MPL2_ONLY to other libraries using Eigen.
-# We wrap this definition in ITK_USE_EIGEN_MPL2_ONLY, and only enabling it internally in the dashboards and CI,
-# to avoid introducing GPL code from Eigen3 internally in ITK.
-
-if(ITK_USE_EIGEN_MPL2_ONLY)
-  target_compile_definitions (eigen_internal INTERFACE "EIGEN_MPL2_ONLY")
-endif()
-
-# BUILD: go one directory before to localize the headers:
-#   #include <itkeigen/Eigen/x>
-# INSTALL: headers require pre-prend itkeigen/Eigen/X.
-target_include_directories (eigen_internal SYSTEM INTERFACE
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-  "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${ITK3P_INSTALL_INCLUDE_DIR}/itkeigen>;"
-  )
-
-# Export as title case Eigen
-install (TARGETS eigen_internal EXPORT ${ITK3P_INSTALL_EXPORT_NAME})
-
