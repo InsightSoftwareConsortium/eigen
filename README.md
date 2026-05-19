@@ -68,11 +68,30 @@ git fetch origin ${ITK_CURRENT_BRANCH}:${ITK_CURRENT_BRANCH}
 git log --oneline upstream/master..${ITK_CURRENT_BRANCH}
 ```
 
-6. Branch from the old fork tag and rebase overlays onto the new release tag (resolve conflicts as needed):
+6. Determine the base commit where the ITK overlay patches begin, then branch and
+   rebase onto the new upstream release (resolve conflicts as needed):
 
 ```
+# Find the commit where ITK_CURRENT_BRANCH diverged from upstream.
+# Using upstream/master directly as the rebase base is unreliable because
+# upstream/master may have advanced since ITK_CURRENT_BRANCH was created.
+REBASE_BASE=$(git merge-base ${ITK_CURRENT_BRANCH} upstream/master)
+echo "REBASE_BASE [${REBASE_BASE}]"
+
 git checkout -b ${NEW_BRANCH} ${ITK_CURRENT_BRANCH}
-git rebase --onto refs/tags/${ITK_EIGEN_TARGET_TAG} upstream/master ${NEW_BRANCH}
+git rebase --onto refs/tags/${ITK_EIGEN_TARGET_TAG} ${REBASE_BASE} ${NEW_BRANCH}
+```
+
+   If the rebase encounters conflicts that are difficult to resolve, abort it and
+   cherry-pick the overlay commits individually instead:
+
+```
+git rebase --abort
+
+# List the overlay commits (newest first) from the log output in step 5
+# and cherry-pick them oldest-first onto the new base:
+git checkout -b ${NEW_BRANCH} refs/tags/${ITK_EIGEN_TARGET_TAG}
+git cherry-pick <oldest-overlay-sha> ... <newest-overlay-sha>
 ```
 
 7. Verify:
